@@ -1,0 +1,13 @@
+.DS_Store
+*.b#?
+*.s#?
+*.tmp
+*.bak
+*.png
+*.ger
+*.gpi
+*.dri
+*.xln
+*~*
+eagleUp
+gerber
