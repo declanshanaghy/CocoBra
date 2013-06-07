@@ -7,20 +7,23 @@
 
 #define TRIGGER_COUNT 3
 #define TRIGGER_TIME 1000
-#define SHOW_TIME 5000
-#define SLEEP_TIME 60000
+#define POP_INTERVAL 5000
 
-#define MAIN_LED_STEADY 200
+#define POP_TIME 50
+#define SHOW_TIME 5000
+#define SLEEP_TIME 120000
+
+#define MAIN_LED_STEADY 100
 #define AUX_LED_MIN 25
 #define AUX_LED_MAX 150
 
-#define MAIN_LED_PIN 7
-#define POWER_PIN 8
+#define MAIN_LED_PIN 9  
+#define POWER_PIN 10
 #define TRIGGER_PIN 0
 
 #define N_LEDS 5
 
-int leds[] = {1, 2, 3, 8, 9};
+int leds[] = {1, 2, 3, 7, 8};
 
 // We need to declare the data exchange
 // variable to be volatile - the value is
@@ -34,6 +37,7 @@ unsigned long lastMainBounce = 0;
 unsigned long lastAuxBounce = 0;
 unsigned long auxBounceTime = 0;
 unsigned int triggerCount = 0;
+unsigned long lastPop = 0;
 
 Bounce trigger = Bounce(TRIGGER_PIN, 50);
 
@@ -49,6 +53,18 @@ void setup() {
   
   lastTrigger = millis();
   firstTrigger = millis();
+  lastPop = millis();
+  
+  int flash = 100;
+  digitalWrite(MAIN_LED_PIN, HIGH);
+  delay(flash);
+  digitalWrite(MAIN_LED_PIN, LOW);
+    
+  for (int i=0; i<N_LEDS; i++) {
+    digitalWrite(leds[i], HIGH);
+    delay(flash);
+    digitalWrite(leds[i], LOW);
+  }
   
   enableInterrupt();
 }
@@ -82,15 +98,22 @@ void loop() {
     }
     return;
   }
+  else if (millis() > lastPop + POP_INTERVAL) {
+      digitalWrite(MAIN_LED_PIN, HIGH);
+      delay(POP_TIME);
+      digitalWrite(MAIN_LED_PIN, LOW);
+      lastPop = millis();
+  }
   
   if ( readTrigger ) {
     readTrigger = false;
     trigger.update();
     if ( trigger.risingEdge() ) {
       triggerCount++;      
-      digitalWrite(8, HIGH);
+      int pin = random(N_LEDS);  
+      digitalWrite(pin, HIGH);
       delay(50);
-      digitalWrite(8, LOW);
+      digitalWrite(pin, LOW);
     }
   }
   else if ( firstTrigger != 0 && millis() > firstTrigger + TRIGGER_TIME ) {
@@ -119,6 +142,7 @@ void reset() {
   auxBounceTime = 0;
   lastMainBounce = 0;
   lastAuxBounce = 0;
+  lastPop = millis();
 }
 
 void goBouncy() {
